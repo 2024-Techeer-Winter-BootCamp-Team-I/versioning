@@ -30,7 +30,8 @@ services:
       - DevSketch-Net
 
   backend:
-    image: sensesis/devsketch-backend:1.0.1
+    image: sensesis/devsketch-backend:1.0.9
+    command: ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
     container_name: backend
     restart: always
     environment:
