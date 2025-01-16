@@ -34,11 +34,8 @@ services:
     command: ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
     container_name: backend
     restart: always
-    environment:
-      DATABASE_HOST: ${DATABASE_HOST}
-      DATABASE_NAME: ${DATABASE_NAME}
-      DATABASE_USER: ${DATABASE_USER}
-      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    env_file:
+      - .env
     networks:
       - DevSketch-Net
     labels:
