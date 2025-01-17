@@ -5,49 +5,108 @@ services:
     image: traefik:v2.9
     container_name: traefik
     command:
-      - "--api.insecure=false"                      # 대시보드 비활성화 (보안 강화)
-      - "--providers.docker=true"                  # Docker 컨테이너를 라우팅 소스로 사용
-      - "--providers.docker.swarmMode=false"       # Docker Swarm 미사용
-      - "--providers.docker.exposedbydefault=false"# 기본적으로 모든 서비스 비활성화
-      - "--entrypoints.web.address=:80"            # HTTP 요청 처리 (포트 80)
-      - "--entrypoints.websecure.address=:443"     # HTTPS 요청 처리 (포트 443)
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure" # HTTP → HTTPS 리다이렉트
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.swarmMode=false"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"  # Let's Encrypt TLS 인증서
-      - "--certificatesresolvers.letsencrypt.acme.email=jinkitea@naver.com"      # 인증서 알림 받을 이메일
-      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json" # 인증서 저장소
-      - "--log.level=INFO"                         # 로그 레벨 설정
-      - "--accesslog=true"                         # 접근 로그 활성화
-      - "--api.dashboard=true"                     # Traefik 대시보드 활성화
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=jinkitea@naver.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--api.dashboard=true"
     ports:
-      - "80:80"                                   # HTTP 포트 노출
-      - "443:443"                                 # HTTPS 포트 노출
-      - "8080:8080"                               # Traefik 대시보드 (포트 8080)
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock" # Docker 소켓 공유
-      - "traefik-certificates:/letsencrypt"        # 인증서 저장소
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "traefik-certificates:/letsencrypt"
     networks:
       - DevSketch-Net
 
   backend:
-    image: sensesis/devsketch-backend:1.0.9
-    command: ["python3", "manage.py", "runserver", "0.0.0.0:8000"]
-    container_name: backend
+    image: sensesis/devsketch-backend1:0.0.1  # 최신 이미지 태그 사용
+    container_name: DevSketch-Backend
     restart: always
     env_file:
       - .env
     networks:
       - DevSketch-Net
     labels:
-      - "traefik.enable=true"                                # Traefik 라우팅 활성화
-      - "traefik.http.routers.backend.entrypoints=websecure" # HTTPS 엔트리포인트 사용
-      - "traefik.http.routers.backend.rule=Host(`devsketch.site`)" # 특정 도메인에서 요청 허용
-      - "traefik.http.services.backend.loadbalancer.server.port=8000" # 백엔드 서비스 포트
-      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"   # Let's Encrypt 인증서 사용
+      - "traefik.enable=true"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.rule=Host(`devsketch.site`)"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+    command: >
+      gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 120
+    environment:
+      RUNNING_IN_DOCKER: 'true'
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      DEEPSEEK_API_URL: ${DEEPSEEK_API_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      FRONTEND_RESULT_URL: ${FRONTEND_RESULT_URL}
+
+  redis:
+    image: redis:7.0
+    container_name: DevSketch-Redis
+    ports:
+      - "6379:6379"
+    networks:
+      - DevSketch-Net
+    volumes:
+      - redis_data:/data
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: DevSketch-RabbitMQ
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - DevSketch-Net
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+  celery_worker:
+    image: sensesis/devsketch-backend1:0.0.1  # 최신 이미지 태그 사용
+    container_name: DevSketch-Celery-Worker
+    command: ["celery", "-A", "config", "worker", "--loglevel=info"]  # 명령어 수정
+    depends_on:
+      - backend
+      - rabbitmq
+      - redis
+    environment:
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DEEPSEEK_API_URL: ${DEEPSEEK_API_URL}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      FRONTEND_RESULT_URL: ${FRONTEND_RESULT_URL}
+    networks:
+      - DevSketch-Net
+
+volumes:
+  traefik-certificates:
+    external: false
+  redis_data:
+  rabbitmq_data:
 
 networks:
   DevSketch-Net:
     driver: bridge
-
-volumes:
-  traefik-certificates: {}
