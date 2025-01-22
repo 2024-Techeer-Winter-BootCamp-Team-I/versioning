@@ -37,7 +37,7 @@ pipeline {
                         rm -rf .git
                         scp -r -o StrictHostKeyChecking=no . ${DEPLOY_SERVER}:~/directory
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
-                        cd ~ &&
+                        cd ~/directory &&
                         ls -al &&
                         docker-compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans
                         docker-compose -f ${DOCKER_COMPOSE_FILE} pull &&
