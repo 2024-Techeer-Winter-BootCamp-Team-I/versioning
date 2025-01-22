@@ -1,81 +1,111 @@
 version: '3.8'
 
 services:
-  backend:
-    container_name: DevSketch-Backend
-    build:
-      context: ../Backend
+  traefik:
+    image: traefik:v2.9
+    container_name: traefik
+    command:
+      - "--api.insecure=false"
+      - "--providers.docker=true"
+      - "--providers.docker.swarmMode=false"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.email=jinkitea@naver.com"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--log.level=INFO"
+      - "--accesslog=true"
+      - "--api.dashboard=true"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
     volumes:
-      - static_volume:/Backend/static
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - "traefik-certificates:/letsencrypt"
+    networks:
+      - DevSketch-Net
+
+  backend:
+    image: sensesis/devsketch:1.0.14  # 최신 이미지 태그 사용
+    container_name: DevSketch-Backend
+    restart: always
     env_file:
       - .env
     networks:
       - DevSketch-Net
-    restart: always
-    command: >
-      sh -c "gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 300"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`backend.${BASE_DOMAIN}`)"
-      - "traefik.http.routers.backend.entrypoints=web,websecure"
-      - "traefik.http.routers.backend.tls.certresolver=myresolver"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.rule=Host(`${BASE_DOMAIN}`)"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+    command: >
+      gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 120
+    environment:
+      RUNNING_IN_DOCKER: 'true'
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      DEEPSEEK_API_URL: ${DEEPSEEK_API_URL}
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      FRONTEND_RESULT_URL: ${FRONTEND_RESULT_URL}
 
   redis:
     image: redis:7.0
     container_name: DevSketch-Redis
+    ports:
+      - "6379:6379"
     networks:
       - DevSketch-Net
-    restart: always
+    volumes:
+      - redis_data:/data
 
   rabbitmq:
     image: rabbitmq:3-management
     container_name: DevSketch-RabbitMQ
+    ports:
+      - "5672:5672"
+      - "15672:15672"
     networks:
       - DevSketch-Net
-    restart: always
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
 
   celery_worker:
-    build:
-      context: ../Backend
+    image: sensesis/devsketch:1.0.14  # 최신 이미지 태그 사용
     container_name: DevSketch-Celery-Worker
-    command: celery -A config worker --loglevel=info
+    command: ["celery", "-A", "config", "worker", "--loglevel=info"]  # 명령어 수정
     depends_on:
       - backend
       - rabbitmq
       - redis
-    env_file:
-      - .env
+    environment:
+      CELERY_BROKER_URL: ${CELERY_BROKER_URL}
+      CELERY_RESULT_BACKEND: ${CELERY_RESULT_BACKEND}
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_USER: ${DATABASE_USER}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DEEPSEEK_API_URL: ${DEEPSEEK_API_URL}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      FRONTEND_RESULT_URL: ${FRONTEND_RESULT_URL}
     networks:
       - DevSketch-Net
-    restart: always
-
-  traefik:
-    image: traefik:v2.9
-    container_name: DevSketch-Traefik
-    command:
-      - "--providers.docker=true"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
-      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.myresolver.acme.email=${jinkitea@naver.com}"
-      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "letsencrypt:/letsencrypt"
-    env_file:
-      - .env
-    networks:
-      - DevSketch-Net
-    restart: always
 
 volumes:
-  static_volume:
-  letsencrypt:
+  traefik-certificates:
+    external: false
+  redis_data:
+  rabbitmq_data:
 
 networks:
   DevSketch-Net:
