@@ -38,9 +38,9 @@ pipeline {
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
                         cd ~ &&
                         ls -al &&
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} pull &&
-                        docker-compose -f ${DOCKER_COMPOSE_FILE} up -d'
+                        docker compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans
+                        docker compose -f ${DOCKER_COMPOSE_FILE} pull &&
+                        docker compose -f ${DOCKER_COMPOSE_FILE} up -d'
                         """
                     }
                 }
