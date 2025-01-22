@@ -58,10 +58,10 @@ pipeline {
                                 [pattern: '.propsfile', type: 'EXCLUDE']])
         }
         success {
-            echo 'Build and deployment successful!!'
+            echo 'Build and deployment successful!'
         }
         failure {
-            echo 'Build or deployment failed..'
+            echo 'Build or deployment failed.'
         }
     }
 }
