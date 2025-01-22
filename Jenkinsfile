@@ -3,14 +3,14 @@ pipeline {
 
     environment {
         DOCKER_COMPOSE_FILE = 'docker-compose-deploy.yml'
-        DEPLOY_SERVER="jinkitea@34.64.246.46"  // 배포가 진행되는 서버 주소 입니다.
+        DEPLOY_SERVER="jinkitea@34.64.246.46"
     }
 
     stages {
         stage('Checkout') {
             steps {
-                cleanWs()
-                git branch: 'main', url: 'https://github.com/2024-Summer-Bootcamp-Team-N/versioning.git'
+		            cleanWS()
+                git branch: 'main', url: 'https://github.com/2024-Techeer-Winter-BootCamp-Team-I/versioning.git'
             }
         }
 
@@ -26,18 +26,19 @@ pipeline {
         stage('Deploy') {
             when {
                 anyOf {
-                    branch 'develop'
                     branch 'main'
+                    branch 'master'
                 }
             }
             steps {
                 script {
                     sshagent(['deploy-server-access']) {
                         sh """
-                        scp -o StrictHostKeyChecking=no ${DOCKER_COMPOSE_FILE} ${DEPLOY_SERVER}:~/${DOCKER_COMPOSE_FILE}
+                        scp -r -o StrictHostKeyChecking=no . ${DEPLOY_SERVER}:~/directory
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
                         cd ~ &&
                         ls -al &&
+                        docker compose -f ${DOCKER_COMPOSE_FILE} down --remove-orphans
                         docker compose -f ${DOCKER_COMPOSE_FILE} pull &&
                         docker compose -f ${DOCKER_COMPOSE_FILE} up -d'
                         """
@@ -48,13 +49,13 @@ pipeline {
     }
 
     post {
-        always {
-            cleanWs(cleanWhenNotBuilt: false,
-                    deleteDirs: true,
-                    disableDeferredWipeout: true,
-                    notFailBuild: true,
-                    patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
-                            [pattern: '.propsfile', type: 'EXCLUDE']])
+		    always {
+                cleanWs(cleanWhenNotBuilt: false,
+                        deleteDirs: true,
+                        disableDeferredWipeout: true,
+                        notFailBuild: true,
+                        patterns: [[pattern: '.gitignore', type: 'INCLUDE'],
+                                [pattern: '.propsfile', type: 'EXCLUDE']])
         }
         success {
             echo 'Build and deployment successful!'
