@@ -40,7 +40,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.rule=Host(`${BASE_DOMAIN}`)"
+      - "traefik.http.routers.backend.rule=Host(`devsketch.site`)"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
     command: >
