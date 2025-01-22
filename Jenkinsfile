@@ -9,7 +9,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-		            cleanWS()
+		            deleteDir()
                 git branch: 'main', url: 'https://github.com/2024-Techeer-Winter-BootCamp-Team-I/versioning.git'
             }
         }
