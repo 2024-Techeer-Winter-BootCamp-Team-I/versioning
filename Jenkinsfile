@@ -59,7 +59,6 @@ pipeline {
         }
         success {
             echo 'Build and deployment successful!'
-            //slackSend message: "Service deployed successfully - ${env.JOB_NAME} ${env.BUILD_NUMBER} (<${env.BUILD_URL}|Open>)"
         }
         failure {
             echo 'Build or deployment failed.'
