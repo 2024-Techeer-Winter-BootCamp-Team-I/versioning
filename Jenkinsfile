@@ -34,6 +34,7 @@ pipeline {
                 script {
                     sshagent(['deploy-server-access']) {
                         sh """
+                        rm -rf .git
                         scp -r -o StrictHostKeyChecking=no . ${DEPLOY_SERVER}:~/directory
                         ssh -o StrictHostKeyChecking=no ${DEPLOY_SERVER} '
                         cd ~ &&
