@@ -12,15 +12,13 @@ services:
       - "--entrypoints.websecure.address=:443"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--certificatesresolvers.letsencrypt.acme.tlschallenge=false" # DNS Challenge만 사용
-      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
-      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=gcloud"
       - "--certificatesresolvers.letsencrypt.acme.email=jinkitea@naver.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--log.level=INFO"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=gcloud"
+      - "--log.level=DEBUG" # DEBUG 레벨로 한 번만 설정
       - "--accesslog=true"
       - "--api.dashboard=true"
-      - "--log.level=DEBUG"
     environment:
       - GCE_PROJECT=neat-pagoda-446818-a2 # Google Cloud 프로젝트 ID
       - GCE_SERVICE_ACCOUNT_FILE=/dns-key.json # 서비스 계정 키 파일 경로
@@ -46,7 +44,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.rule=HostRegexp(`{subdomain:[a-z0-9-]+}.devsketch.site`)"
+      - "traefik.http.routers.backend.rule=Host(`devsketch.site`, `*.devsketch.site`)"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
     command: >
