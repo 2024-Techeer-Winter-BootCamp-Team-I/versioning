@@ -43,17 +43,11 @@ services:
     labels:
       - "traefik.enable=true"
 
-      # 라우터 1: 메인 도메인
-      - "traefik.http.routers.backend-main.rule=Host(`devsketch.site`)"
-      - "traefik.http.routers.backend-main.entrypoints=websecure"
-      - "traefik.http.routers.backend-main.tls.certresolver=letsencrypt"
-      - "traefik.http.services.backend-main.loadbalancer.server.port=8000"
-
-      # 라우터 2: 와일드카드 서브도메인
-      - "traefik.http.routers.backend-wildcard.rule=HostRegexp(`{subdomain:.+}.devsketch.site`)"
-      - "traefik.http.routers.backend-wildcard.entrypoints=websecure"
-      - "traefik.http.routers.backend-wildcard.tls.certresolver=letsencrypt"
-      - "traefik.http.services.backend-wildcard.loadbalancer.server.port=8000"
+      # 단일 라우터: 메인 도메인과 와일드카드 서브도메인 모두 처리
+      - "traefik.http.routers.backend.rule=Host(`devsketch.site`) || HostRegexp(`{subdomain:.+}.devsketch.site`)"
+      - "traefik.http.routers.backend.entrypoints=websecure"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
     command: >
       gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 120
