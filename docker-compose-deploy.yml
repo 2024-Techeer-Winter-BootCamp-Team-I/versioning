@@ -20,6 +20,7 @@ services:
       - "--log.level=INFO"
       - "--accesslog=true"
       - "--api.dashboard=true"
+      - "--log.level=DEBUG"
     environment:
       - GCE_PROJECT=neat-pagoda-446818 # Google Cloud 프로젝트 ID
       - GCE_SERVICE_ACCOUNT_FILE=/dns-key.json # 서비스 계정 키 파일 경로
