@@ -42,7 +42,7 @@ services:
       - directory_DevSketch-Net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`devsketch.site`) || Host(`*.devsketch.site`)"
+      - "traefik.http.routers.backend.rule=Host(`devsketch.site`) || HostRegexp(`{subdomain:.+}.devsketch.site`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
