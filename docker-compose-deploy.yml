@@ -15,13 +15,14 @@ services:
       - "--certificatesresolvers.letsencrypt.acme.tlschallenge=false" # DNS Challenge만 사용
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=gcloud"
-      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.gcloud.project=neat-pagoda-446818" # Google Cloud 프로젝트 ID
-      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.gcloud.jsonkeypath=/dns-key.json"
       - "--certificatesresolvers.letsencrypt.acme.email=jinkitea@naver.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
       - "--log.level=INFO"
       - "--accesslog=true"
       - "--api.dashboard=true"
+    environment:
+      - GCE_PROJECT=neat-pagoda-446818 # Google Cloud 프로젝트 ID
+      - GCE_SERVICE_ACCOUNT_FILE=/dns-key.json # 서비스 계정 키 파일 경로
     ports:
       - "80:80"
       - "443:443"
