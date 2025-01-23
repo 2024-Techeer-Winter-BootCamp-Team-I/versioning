@@ -128,6 +128,8 @@ services:
       - traefik.http.routers.grafana.rule=Host(`grafana.devsketch.site`)
     volumes:
       - grafana_data:/var/lib/grafana
+    networks:
+      - directory_DevSketch-Net
 
 
 
