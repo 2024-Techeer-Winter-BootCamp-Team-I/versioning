@@ -14,9 +14,8 @@ services:
       - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
       - "--certificatesresolvers.letsencrypt.acme.email=jinkitea@naver.com"
       - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
       - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=gcloud"
-      - "--log.level=DEBUG" # DEBUG 레벨로 한 번만 설정
+      - "--log.level=DEBUG" # 로그 레벨을 DEBUG로 한 번만 설정
       - "--accesslog=true"
       - "--api.dashboard=true"
     environment:
@@ -43,10 +42,18 @@ services:
       - directory_DevSketch-Net
     labels:
       - "traefik.enable=true"
+
+      # 라우터 1: devsketch.site
+      - "traefik.http.routers.backend.rule=Host(`devsketch.site`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
-      - "traefik.http.routers.backend.rule=Host(`devsketch.site`, `*.devsketch.site`)"
-      - "traefik.http.services.backend.loadbalancer.server.port=8000"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+      # 라우터 2: *.devsketch.site
+      - "traefik.http.routers.backend-wildcard.rule=Host(`*.devsketch.site`)"
+      - "traefik.http.routers.backend-wildcard.entrypoints=websecure"
+      - "traefik.http.routers.backend-wildcard.tls.certresolver=letsencrypt"
+      - "traefik.http.services.backend-wildcard.loadbalancer.server.port=8000"
     command: >
       gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 120
     environment:
