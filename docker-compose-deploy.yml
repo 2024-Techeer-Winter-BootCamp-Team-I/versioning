@@ -95,7 +95,7 @@ services:
   celery_worker:
     image: sensesis/devsketch:1.0.47  # 최신 이미지 태그 사용
     container_name: DevSketch-Celery-Worker
-    privileged: true
+    #privileged: true
     command: ["celery", "-A", "config", "worker", "--loglevel=info"]
     depends_on:
       - backend
