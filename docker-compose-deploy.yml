@@ -40,7 +40,7 @@ services:
       - directory_DevSketch-Net
 
   backend:
-    image: sensesis/devsketch:1.0.43  # 최신 이미지 태그 사용
+    image: sensesis/devsketch:1.0.44  # 최신 이미지 태그 사용
     container_name: DevSketch-Backend
     restart: always
     env_file:
@@ -93,7 +93,7 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
 
   celery_worker:
-    image: sensesis/devsketch:1.0.43  # 최신 이미지 태그 사용
+    image: sensesis/devsketch:1.0.44  # 최신 이미지 태그 사용
     container_name: DevSketch-Celery-Worker
     command: ["celery", "-A", "config", "worker", "--loglevel=info"]
     depends_on:
