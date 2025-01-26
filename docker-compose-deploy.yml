@@ -40,7 +40,7 @@ services:
       - directory_DevSketch-Net
 
   backend:
-    image: sensesis/devsketch:1.0.53  # 최신 이미지 태그 사용
+    image: sensesis/devsketch:1.0.61ls  # 최신 이미지 태그 사용
     container_name: DevSketch-Backend
     restart: always
     env_file:
@@ -93,7 +93,7 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
 
   celery_worker:
-    image: sensesis/devsketch:1.0.53  # 최신 이미지 태그 사용
+    image: sensesis/devsketch:1.0.61  # 최신 이미지 태그 사용
     container_name: DevSketch-Celery-Worker
     privileged: true
     command: ["celery", "-A", "config", "worker", "--loglevel=info"]
@@ -116,23 +116,6 @@ services:
       - directory_DevSketch-Net
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-
-  grafana:
-    image: grafana/grafana:latest
-    ports:
-      - "3000:3000"
-    labels:
-      - traefik.enable=true
-      - traefik.http.services.grafana.loadbalancer.server.port=3000
-      - traefik.http.routers.grafana.entrypoints=websecure
-      - traefik.http.routers.grafana.tls.certresolver=letsencrypt
-      - traefik.http.routers.grafana.rule=Host(`grafana.devsketch.site`)
-    volumes:
-      - grafana_data:/var/lib/grafana
-    networks:
-      - directory_DevSketch-Net
-
-
 
 volumes:
   traefik-certificates:
