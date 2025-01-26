@@ -42,6 +42,8 @@ services:
   backend:
     image: sensesis/devsketch:1.0.61  # 최신 이미지 태그 사용
     container_name: DevSketch-Backend
+    ports:
+      - "8000:8000"
     restart: always
     env_file:
       - .env
@@ -87,6 +89,7 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
+      - "15692:15692"
     networks:
       - directory_DevSketch-Net
     volumes:
