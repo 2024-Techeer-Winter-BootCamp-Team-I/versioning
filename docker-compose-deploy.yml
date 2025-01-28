@@ -57,7 +57,7 @@ services:
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
 
     command: >
-      gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 120
+      gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 600
     environment:
       RUNNING_IN_DOCKER: 'true'
       DATABASE_HOST: ${DATABASE_HOST}
