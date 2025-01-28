@@ -31,7 +31,7 @@ services:
       - "/home/jinkitea/dns-key.json:/dns-key.json:ro" # Google DNS 인증 키 마운트
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.mydashboard.rule=Host(`traefik.devsketch.site`)"
+      - "traefik.http.routers.mydashboard.rule=Host(`traefik.devsketch.xyz`)"
       - 'traefik.http.routers.mydashboard.entrypoints=websecure'
       - "traefik.http.routers.mydashboard.service=api@internal"
       - "traefik.http.routers.mydashboard.tls.certresolver=letsencrypt"
@@ -51,7 +51,7 @@ services:
       - directory_DevSketch-Net
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=Host(`devsketch.site`)"
+      - "traefik.http.routers.backend.rule=Host(`devsketch.xyz`)"
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
