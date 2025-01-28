@@ -36,6 +36,8 @@ services:
       - "traefik.http.routers.mydashboard.service=api@internal"
       - "traefik.http.routers.mydashboard.tls.certresolver=letsencrypt"
       - "traefik.http.services.mydashboard.loadbalancer.server.port=8080"
+      - "traefik.http.routers.backend.tls=true"
+      - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
     networks:
       - directory_DevSketch-Net
 
