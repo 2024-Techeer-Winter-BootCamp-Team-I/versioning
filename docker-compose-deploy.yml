@@ -55,9 +55,6 @@ services:
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
-      - "--certificatesresolvers.lets-encrypt.acme.email=msjinkitea@naver.com"  # Let's Encrypt 이메일
-      - "--certificatesresolvers.lets-encrypt.acme.storage=/letsencrypt/acme.json"  # 인증서 저장 경로
-      - "--certificatesresolvers.lets-encrypt.acme.httpchallenge.entrypoint=web"  # HTTP Challenge 설정
 
     command: >
       gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 600
