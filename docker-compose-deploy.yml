@@ -55,6 +55,7 @@ services:
       - "traefik.http.routers.backend.entrypoints=websecure"
       - "traefik.http.routers.backend.tls.certresolver=letsencrypt"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+      - "traefik.http.services.backend.loadbalancer.server.timeout=600s"
 
     command: >
       gunicorn --bind 0.0.0.0:8000 config.wsgi:application --timeout 600
