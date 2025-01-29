@@ -120,6 +120,19 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
 
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
+    container_name: devsketch-cadvisor
+    ports:
+      - "8080:8080" #포트 8080 매핑
+    volumes:
+      - /:/rootfs:ro #읽기 전용 데이터 - 루트 파일 시스템
+      - /var/run:/var/run:rw #읽기 & 쓰기 - 런타임 데이터
+      - /sys:/sys:ro  #읽기 전용 데이터 - 커널, 하드웨어, 드라이버 정보 등등
+      - /var/lib/docker/:/var/lib/docker:ro #읽기 전용 데이터 - 도커 정보 데이터
+    networks:
+      - directory_DevSketch-Net
+
 volumes:
   traefik-certificates:
     external: false
