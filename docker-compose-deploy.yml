@@ -40,7 +40,7 @@ services:
       - directory_DevSketch-Net
 
   backend:
-    image: sensesis/devsketch:1.0.90  # 최신 이미지 태그 사용
+    image: sensesis/devsketch:1.0.88  # 최신 이미지 태그 사용
     container_name: DevSketch-Backend
     ports:
       - "8000:8000"
@@ -96,7 +96,7 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
 
   celery_worker:
-    image: sensesis/devsketch:1.0.90 # 최신 이미지 태그 사용
+    image: sensesis/devsketch:1.0.88 # 최신 이미지 태그 사용
     container_name: DevSketch-Celery-Worker
     privileged: true
     command: ["celery", "-A", "config", "worker", "--loglevel=info"]
